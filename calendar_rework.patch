@@ -1,0 +1,408 @@
+diff -ruN a/src/App.tsx b/src/App.tsx
+--- a/src/App.tsx	2026-06-04 21:26:15.000000000 +0000
++++ b/src/App.tsx	2026-06-04 22:07:50.000000000 +0000
+@@ -4,7 +4,6 @@
+ import CalendarPage from './pages/CalendarPage';
+ import DashboardPage from './pages/DashboardPage';
+ import NotFoundPage from './pages/NotFoundPage';
+-import ReportPage from './pages/ReportPage';
+ import ScheduleDetailPage from './pages/ScheduleDetailPage';
+ import ScheduleListPage from './pages/ScheduleListPage';
+ 
+@@ -17,7 +16,6 @@
+         <Route path="/schedules" element={<ScheduleListPage />} />
+         <Route path="/schedules/:scheduleId" element={<ScheduleDetailPage />} />
+         <Route path="/add" element={<AddSchedulePage />} />
+-        <Route path="/report" element={<ReportPage />} />
+         <Route path="*" element={<NotFoundPage />} />
+       </Route>
+     </Routes>
+diff -ruN a/src/components/Header.tsx b/src/components/Header.tsx
+--- a/src/components/Header.tsx	2026-06-04 21:25:14.000000000 +0000
++++ b/src/components/Header.tsx	2026-06-04 22:07:50.000000000 +0000
+@@ -3,16 +3,12 @@
+ const Header = () => {
+   return (
+     <header className="header">
+-      <div>
+-        <p className="eyebrow">React 개인 스케줄 관리</p>
+-        <h1>나의 캘린더</h1>
+-      </div>
++      <h1>나의 캘린더</h1>
+       <nav className="nav">
+         <NavLink to="/">대시보드</NavLink>
+         <NavLink to="/calendar">캘린더</NavLink>
+         <NavLink to="/schedules">일정목록</NavLink>
+         <NavLink to="/add">일정추가</NavLink>
+-        <NavLink to="/report">설명</NavLink>
+       </nav>
+     </header>
+   );
+diff -ruN a/src/data/initialSchedules.ts b/src/data/initialSchedules.ts
+--- a/src/data/initialSchedules.ts	2026-06-04 21:25:01.000000000 +0000
++++ b/src/data/initialSchedules.ts	2026-06-04 22:07:50.000000000 +0000
+@@ -9,7 +9,7 @@
+     endTime: '11:30',
+     category: 'study',
+     priority: 'high',
+-    memo: '라우터, Hook, 전역상태 적용 내용을 report 화면에 정리하기',
++    memo: '캘린더 화면 구조와 일정 등록 흐름 정리하기',
+     completed: false
+   },
+   {
+@@ -20,7 +20,7 @@
+     endTime: '15:00',
+     category: 'work',
+     priority: 'normal',
+-    memo: '프로젝트 설명 문장과 캡처 이미지 위치 정리',
++    memo: '프로젝트 제출 자료와 화면 캡처 위치 정리',
+     completed: false
+   },
+   {
+diff -ruN a/src/index.css b/src/index.css
+--- a/src/index.css	2026-06-04 21:26:15.000000000 +0000
++++ b/src/index.css	2026-06-04 22:08:02.000000000 +0000
+@@ -337,6 +337,150 @@
+   grid-column: 1 / -1;
+ }
+ 
++
++
++.month-calendar {
++  display: grid;
++  gap: 16px;
++}
++
++.calendar-header-row {
++  display: grid;
++  grid-template-columns: 120px 1fr 120px;
++  align-items: center;
++  gap: 12px;
++}
++
++.calendar-header-row h3 {
++  margin: 0;
++  text-align: center;
++  font-size: 24px;
++}
++
++.calendar-header-row button {
++  padding: 11px 14px;
++  border: 0;
++  border-radius: 12px;
++  background: #2563eb;
++  color: #ffffff;
++  font-weight: 800;
++}
++
++.weekday-grid,
++.month-grid {
++  display: grid;
++  grid-template-columns: repeat(7, minmax(0, 1fr));
++}
++
++.weekday-grid {
++  gap: 8px;
++}
++
++.weekday-grid strong {
++  padding: 10px 0;
++  color: #475569;
++  text-align: center;
++  font-size: 14px;
++}
++
++.month-grid {
++  overflow: hidden;
++  border: 1px solid #e2e8f0;
++  border-radius: 20px;
++  background: #e2e8f0;
++  gap: 1px;
++}
++
++.calendar-day {
++  display: grid;
++  align-content: start;
++  gap: 8px;
++  min-height: 118px;
++  padding: 10px;
++  border: 0;
++  background: #ffffff;
++  color: #1f2937;
++  text-align: left;
++}
++
++.calendar-day:hover {
++  background: #f8fafc;
++}
++
++.calendar-day.selected {
++  outline: 3px solid #2563eb;
++  outline-offset: -3px;
++  background: #eff6ff;
++}
++
++.calendar-day.today .day-number {
++  background: #2563eb;
++  color: #ffffff;
++}
++
++.calendar-day.muted-day {
++  background: #f8fafc;
++  color: #94a3b8;
++}
++
++.day-number {
++  display: inline-flex;
++  align-items: center;
++  justify-content: center;
++  width: 28px;
++  height: 28px;
++  border-radius: 999px;
++  font-weight: 900;
++}
++
++.day-badge-list {
++  display: grid;
++  gap: 5px;
++}
++
++.calendar-badge {
++  display: block;
++  overflow: hidden;
++  max-width: 100%;
++  padding: 5px 7px;
++  border-radius: 999px;
++  background: #eff6ff;
++  color: #2563eb;
++  font-size: 11px;
++  font-weight: 900;
++  text-overflow: ellipsis;
++  white-space: nowrap;
++}
++
++.calendar-badge.high {
++  background: #fee2e2;
++  color: #dc2626;
++}
++
++.calendar-badge.normal {
++  background: #fef3c7;
++  color: #b45309;
++}
++
++.calendar-badge.low {
++  background: #dcfce7;
++  color: #15803d;
++}
++
++.calendar-badge.more {
++  background: #e2e8f0;
++  color: #475569;
++}
++
++.selected-date-section {
++  display: grid;
++  gap: 16px;
++}
++
++.compact-button {
++  align-self: flex-start;
++}
++
+ .calendar-list {
+   display: grid;
+   gap: 18px;
+@@ -410,4 +554,22 @@
+   .mini-item {
+     grid-template-columns: 1fr;
+   }
++
++  .calendar-header-row {
++    grid-template-columns: 1fr;
++  }
++
++  .weekday-grid,
++  .month-grid {
++    grid-template-columns: repeat(7, minmax(42px, 1fr));
++  }
++
++  .month-grid {
++    overflow-x: auto;
++  }
++
++  .calendar-day {
++    min-height: 96px;
++    padding: 8px;
++  }
+ }
+diff -ruN a/src/pages/CalendarPage.tsx b/src/pages/CalendarPage.tsx
+--- a/src/pages/CalendarPage.tsx	2026-06-04 21:25:44.000000000 +0000
++++ b/src/pages/CalendarPage.tsx	2026-06-04 22:07:49.000000000 +0000
+@@ -1,42 +1,145 @@
+-import { useMemo } from 'react';
++import { useMemo, useState } from 'react';
+ import { Link } from 'react-router-dom';
++import EmptyState from '../components/EmptyState';
+ import { useSchedule } from '../context/ScheduleContext';
+-import { formatDateKorean, sortByDateTime } from '../utils/dateUtils';
++import { priorityLabels } from '../data/initialSchedules';
++import { getTodayString, formatDateKorean, sortByDateTime } from '../utils/dateUtils';
++
++const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
++
++const toDateKey = (date: Date) => {
++  const year = date.getFullYear();
++  const month = String(date.getMonth() + 1).padStart(2, '0');
++  const day = String(date.getDate()).padStart(2, '0');
++  return `${year}-${month}-${day}`;
++};
++
++const createMonthDate = (dateKey: string) => {
++  const [year, month] = dateKey.split('-').map(Number);
++  return new Date(year, month - 1, 1);
++};
+ 
+ const CalendarPage = () => {
+   const { schedules } = useSchedule();
++  const today = getTodayString();
++  const [selectedDate, setSelectedDate] = useState(today);
++  const [currentMonth, setCurrentMonth] = useState(() => createMonthDate(today));
+ 
+-  const groupedSchedules = useMemo(() => {
++  const schedulesByDate = useMemo(() => {
+     return sortByDateTime(schedules).reduce<Record<string, typeof schedules>>((acc, schedule) => {
+       acc[schedule.date] = [...(acc[schedule.date] || []), schedule];
+       return acc;
+     }, {});
+   }, [schedules]);
+ 
++  const monthCells = useMemo(() => {
++    const year = currentMonth.getFullYear();
++    const month = currentMonth.getMonth();
++    const firstDay = new Date(year, month, 1);
++    const startDate = new Date(year, month, 1 - firstDay.getDay());
++
++    return Array.from({ length: 42 }, (_, index) => {
++      const date = new Date(startDate);
++      date.setDate(startDate.getDate() + index);
++
++      return {
++        date,
++        dateKey: toDateKey(date),
++        day: date.getDate(),
++        isCurrentMonth: date.getMonth() === month
++      };
++    });
++  }, [currentMonth]);
++
++  const selectedSchedules = schedulesByDate[selectedDate] || [];
++  const monthLabel = `${currentMonth.getFullYear()}년 ${String(currentMonth.getMonth() + 1).padStart(2, '0')}월`;
++
++  const moveMonth = (amount: number) => {
++    const nextMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + amount, 1);
++    setCurrentMonth(nextMonth);
++    setSelectedDate(toDateKey(nextMonth));
++  };
++
++  const selectDate = (date: Date) => {
++    setSelectedDate(toDateKey(date));
++
++    if (date.getMonth() !== currentMonth.getMonth()) {
++      setCurrentMonth(new Date(date.getFullYear(), date.getMonth(), 1));
++    }
++  };
++
+   return (
+     <div className="page-stack">
+       <section className="page-title">
+         <p className="eyebrow">Calendar</p>
+-        <h2>날짜별 스케줄</h2>
+-        <p>간단한 과제용 캘린더 화면으로, 등록된 일정을 날짜별로 묶어서 표시합니다.</p>
++        <h2>월간 캘린더</h2>
++        <p>날짜 안의 일정은 중요도 색상 배지로 표시되며, 날짜를 선택하면 하단에 해당 일자의 일정 목록이 표시됩니다.</p>
+       </section>
+ 
+-      <div className="calendar-list">
+-        {Object.entries(groupedSchedules).map(([date, items]) => (
+-          <section key={date} className="date-group">
+-            <h3>{formatDateKorean(date)}</h3>
+-            <div className="date-items">
+-              {items.map((schedule) => (
+-                <Link key={schedule.id} to={`/schedules/${schedule.id}`} className="date-item">
+-                  <span>{schedule.startTime} ~ {schedule.endTime}</span>
+-                  <strong>{schedule.title}</strong>
+-                  <em>{schedule.completed ? '완료' : '미완료'}</em>
+-                </Link>
+-              ))}
+-            </div>
+-          </section>
+-        ))}
+-      </div>
++      <section className="month-calendar panel">
++        <div className="calendar-header-row">
++          <button type="button" onClick={() => moveMonth(-1)}>이전 달</button>
++          <h3>{monthLabel}</h3>
++          <button type="button" onClick={() => moveMonth(1)}>다음 달</button>
++        </div>
++
++        <div className="weekday-grid">
++          {weekDays.map((day) => (
++            <strong key={day}>{day}</strong>
++          ))}
++        </div>
++
++        <div className="month-grid">
++          {monthCells.map((cell) => {
++            const daySchedules = schedulesByDate[cell.dateKey] || [];
++            const visibleSchedules = daySchedules.slice(0, 3);
++            const hiddenCount = daySchedules.length - visibleSchedules.length;
++
++            return (
++              <button
++                key={cell.dateKey}
++                type="button"
++                className={`calendar-day ${cell.isCurrentMonth ? '' : 'muted-day'} ${cell.dateKey === selectedDate ? 'selected' : ''} ${cell.dateKey === today ? 'today' : ''}`}
++                onClick={() => selectDate(cell.date)}
++              >
++                <span className="day-number">{cell.day}</span>
++                <span className="day-badge-list">
++                  {visibleSchedules.map((schedule) => (
++                    <span key={schedule.id} className={`calendar-badge ${schedule.priority}`} title={schedule.title}>
++                      {schedule.title}
++                    </span>
++                  ))}
++                  {hiddenCount > 0 && <span className="calendar-badge more">+{hiddenCount}</span>}
++                </span>
++              </button>
++            );
++          })}
++        </div>
++      </section>
++
++      <section className="date-group selected-date-section">
++        <div className="panel-title-row">
++          <div>
++            <p className="eyebrow">Selected Date</p>
++            <h3>{formatDateKorean(selectedDate)} 일정</h3>
++          </div>
++          <Link to="/add" className="primary-button compact-button">일정 추가</Link>
++        </div>
++
++        {selectedSchedules.length > 0 ? (
++          <div className="date-items">
++            {selectedSchedules.map((schedule) => (
++              <Link key={schedule.id} to={`/schedules/${schedule.id}`} className="date-item">
++                <span>{schedule.startTime} ~ {schedule.endTime}</span>
++                <strong>{schedule.title}</strong>
++                <em className={`badge ${schedule.priority}`}>중요도 {priorityLabels[schedule.priority]}</em>
++              </Link>
++            ))}
++          </div>
++        ) : (
++          <EmptyState title="선택한 날짜의 일정이 없습니다" description="상단 메뉴의 일정추가 화면에서 새 일정을 등록할 수 있습니다." />
++        )}
++      </section>
+     </div>
+   );
+ };

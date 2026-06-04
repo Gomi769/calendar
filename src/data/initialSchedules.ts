@@ -9,7 +9,7 @@ export const initialSchedules: Schedule[] = [
     endTime: '11:30',
     category: 'study',
     priority: 'high',
-    memo: '라우터, Hook, 전역상태 적용 내용을 report 화면에 정리하기',
+    memo: '캘린더 화면 구조와 일정 등록 흐름 정리하기',
     completed: false
   },
   {
@@ -20,7 +20,7 @@ export const initialSchedules: Schedule[] = [
     endTime: '15:00',
     category: 'work',
     priority: 'normal',
-    memo: '프로젝트 설명 문장과 캡처 이미지 위치 정리',
+    memo: '프로젝트 제출 자료와 화면 캡처 위치 정리',
     completed: false
   },
   {
